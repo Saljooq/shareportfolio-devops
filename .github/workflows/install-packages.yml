@@ -1,0 +1,27 @@
+name: Run Bash Script on EC2
+
+on:
+  push:
+    branches:
+      - main  # You can change this to trigger on different branches or events like PRs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "$EC2_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $EC2_PUBLIC_IP >> ~/.ssh/known_hosts
+
+    - name: Run script on EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ubuntu@$EC2_PUBLIC_IP 'bash -s' < ./install_packages.sh
+      env:
+        EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
