@@ -18,10 +18,12 @@ jobs:
         echo "$EC2_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $EC2_PUBLIC_IP >> ~/.ssh/known_hosts
+      env:
+        EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+        EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 
     - name: Run script on EC2
       run: |
         ssh -i ~/.ssh/id_rsa ubuntu@$EC2_PUBLIC_IP 'bash -s' < ./install_packages.sh
       env:
         EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
-        EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
