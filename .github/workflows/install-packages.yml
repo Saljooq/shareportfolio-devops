@@ -1,10 +1,9 @@
 name: Run Bash Script on EC2
 
 on:
-  push:
-    branches:
-      - main  # You can change this to trigger on different branches or events like PRs
+  workflow_dispatch:  # Allows manual triggering
 
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
