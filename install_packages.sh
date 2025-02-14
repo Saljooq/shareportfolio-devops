@@ -20,5 +20,5 @@ for PACKAGE_NAME in "${PACKAGES[@]}"; do
   fi
 done
 
-systemctl start nginx
-systemctl enable nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
