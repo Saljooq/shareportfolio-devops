@@ -1,0 +1,49 @@
+name: Deploy Nginx Configuration to EC2
+
+on:
+  workflow_dispatch:  # This ensures the workflow runs manually
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # Add EC2 server to known hosts (replace with your EC2's public IP)
+          ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+          EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+      - name: Copy Nginx config to EC2
+        run: |
+          # SCP the nginx config file to the EC2 server
+          scp -i ~/.ssh/id_rsa nginx/sites-available/default ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/tmp/default
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+
+      - name: Update Nginx config on EC2
+        run: |
+          # SSH into EC2 and replace the Nginx config file, update the symlink, and restart Nginx
+          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+            # Replace the default Nginx configuration
+            sudo mv /tmp/default /etc/nginx/sites-available/default
+
+            # Update the symlink in sites-enabled (if needed)
+            sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+            # Test the Nginx configuration to ensure it's valid
+            sudo nginx -t
+
+            # Restart Nginx to apply the new configuration
+            sudo systemctl restart nginx
+          EOF
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}

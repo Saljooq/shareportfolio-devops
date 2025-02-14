@@ -1,0 +1,25 @@
+server {
+    listen 80;
+    server_name yourdomain.com;  # Change to your domain or IP address
+
+    # API requests - forward to Go server with the '/api' part stripped
+    location /api/ {
+        rewrite ^/api(/.*)$ $1 break;  # Strip /api from the URL before passing it to the Go server
+        proxy_pass http://localhost:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Serve static files from the built React app
+    location / {
+        root /var/www/html;  # Directory where your React build files are located
+        try_files $uri $uri/ /index.html;  # Fallback to index.html for single-page application routing
+    }
+
+    # Optional: if you're using HTTPS, here's a basic SSL configuration (replace with your SSL certificates)
+    # listen 443 ssl;
+    # ssl_certificate /path/to/certificate.crt;
+    # ssl_certificate_key /path/to/private.key;
+}
