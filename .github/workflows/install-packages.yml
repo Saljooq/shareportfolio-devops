@@ -3,7 +3,7 @@ name: Run Bash Script on EC2
 on:
   workflow_dispatch:  # Allows manual triggering
 
-  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,3 +24,4 @@ jobs:
         ssh -i ~/.ssh/id_rsa ubuntu@$EC2_PUBLIC_IP 'bash -s' < ./install_packages.sh
       env:
         EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+        EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
